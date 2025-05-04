@@ -1,0 +1,554 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng Nghiệp 12 - Định Hướng Tương Lai</title>
+    <style>
+        /* CSS Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f4f4f4;
+        }
+
+        /* Header */
+        header {
+            background: #1a5276;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 0.5rem 0;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            transition: background 0.3s;
+        }
+
+        nav ul li a:hover {
+            background: #3498db;
+            border-radius: 5px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: url('https://via.placeholder.com/1200x400?text=Chào+Mừng+Đến+Hướng+Nghiệp+12') no-repeat center/cover;
+            color: white;
+            text-align: center;
+            padding: 5rem 2rem;
+            background-blend-mode: overlay;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .hero h2 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .cta-button {
+            background: #e74c3c;
+            color: white;
+            padding: 0.8rem 2rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #c0392b;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        section {
+            margin-bottom: 4rem;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        section h2 {
+            font-size: 2rem;
+            color: #1a5276;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        .card p {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            max-width: 600px;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content h3 {
+            font-size: 1.8rem;
+            color: #1a5276;
+            margin-bottom: 1rem;
+        }
+
+        .modal-content p {
+            margin-bottom: 1rem;
+        }
+
+        .modal-content ul {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            color: #333;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-button:hover {
+            color: #e74c3c;
+        }
+
+        /* Table and Filter */
+        .filter-container {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .filter-container input {
+            padding: 0.5rem;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 0.8rem;
+            text-align: left;
+        }
+
+        table th {
+            background: #1a5276;
+            color: white;
+            font-weight: bold;
+        }
+
+        table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        table tr:hover {
+            background: #e8f4f8;
+        }
+
+        /* Timeline for Application */
+        .timeline {
+            position: relative;
+            margin: 2rem 0;
+            padding: 1rem 0;
+        }
+
+        .timeline-item {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            background: #3498db;
+            border-radius: 50%;
+        }
+
+        .timeline-item h4 {
+            font-size: 1.2rem;
+            color: #2c3e50;
+        }
+
+        /* Footer */
+        footer {
+            background: #1a5276;
+            color: white;
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: 3rem;
+        }
+
+        footer p {
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            section {
+                padding: 1.5rem;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 10% 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Hướng Nghiệp 12 - Định Hướng Tương Lai</h1>
+        <nav>
+            <ul>
+                <li><a href="#home">Trang Chủ</a></li>
+                <li><a href="#industries">Chọn Ngành</a></li>
+                <li><a href="#admissions">Tuyển Sinh</a></li>
+                <li><a href="#application">Hồ Sơ</a></li>
+                <li><a href="#scholarships">Học Bổng</a></li>
+                <li><a href="#quiz">Trắc Nghiệm</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <h2>Khám Phá Tương Lai Của Bạn!</h2>
+        <p>Trang web cung cấp thông tin tuyển sinh, tư vấn ngành nghề và hỗ trợ học bổng dành cho học sinh lớp 12.</p>
+        <a href="#industries" class="cta-button">Khám Phá Ngành Nghề</a>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Industries Section -->
+        <section id="industries">
+            <h2>Tìm Hiểu Ngành Nghề</h2>
+            <div class="card-grid">
+                <div class="card" data-type="industry" data-id="tech">
+                    <h3>Kỹ thuật - Công nghệ</h3>
+                    <p>CNTT, Cơ khí, Điện tử, Kỹ thuật ô tô... Dẫn đầu xu hướng công nghệ 4.0.</p>
+                    <a href="#" class="cta-button view-details">Xem thêm</a>
+                </div>
+                <div class="card" data-type="industry" data-id="business">
+                    <h3>Kinh tế - Quản trị</h3>
+                    <p>Quản trị kinh doanh, Marketing, Kế toán... Phù hợp với người năng động, sáng tạo.</p>
+                    <a href="#" class="cta-button view-details">Xem thêm</a>
+                </div>
+                <div class="card" data-type="industry" data-id="medical">
+                    <h3>Y - Dược</h3>
+                    <p>Y khoa, Dược học, Điều dưỡng... Ngành nghề ổn định, ý nghĩa xã hội cao.</p>
+                    <a href="#" class="cta-button view-details">Xem thêm</a>
+                </div>
+                <div class="card" data-type="industry" data-id="social">
+                    <h3>Khoa học xã hội</h3>
+                    <p>Luật, Báo chí, Quan hệ quốc tế... Dành cho người yêu thích phân tích, giao tiếp.</p>
+                    <a href="#" class="cta-button view-details">Xem thêm</a>
+                </div>
+                <div class="card" data-type="industry" data-id="art">
+                    <h3>Nghệ thuật - Thiết kế</h3>
+                    <p>Thiết kế đồ họa, Âm nhạc, Điện ảnh... Thỏa sức sáng tạo và thể hiện bản thân.</p>
+                    <a href="#" class="cta-button view-details">Xem thêm</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Admissions Section -->
+        <section id="admissions">
+            <h2>Thông Tin Tuyển Sinh</h2>
+            <div class="filter-container">
+                <input type="text" id="schoolFilter" placeholder="Tìm kiếm trường hoặc khu vực..." onkeyup="filterTable()">
+            </div>
+            <div class="table-container">
+                <table id="schoolTable">
+                    <thead>
+                        <tr>
+                            <th>Trường</th>
+                            <th>Khu vực</th>
+                            <th>Phương thức xét tuyển</th>
+                            <th>Điểm chuẩn 2024</th>
+                            <th>Link</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ĐH Bách Khoa Hà Nội</td>
+                            <td>Miền Bắc</td>
+                            <td>Thi THPT, Kỳ thi riêng</td>
+                            <td>24 - 28</td>
+                            <td><a href="#" target="_blank">Website</a></td>
+                        </tr>
+                        <tr>
+                            <td>ĐH Kinh tế Quốc dân</td>
+                            <td>Miền Bắc</td>
+                            <td>Thi THPT, Học bạ</td>
+                            <td>26 - 29</td>
+                            <td><a href="#" target="_blank">Website</a></td>
+                        </tr>
+                        <tr>
+                            <td>ĐH Y Dược TP.HCM</td>
+                            <td>Miền Nam</td>
+                            <td>Thi THPT</td>
+                            <td>25 - 27</td>
+                            <td><a href="#" target="_blank">Website</a></td>
+                        </tr>
+                        <tr>
+                            <td>ĐH Sư phạm TP.HCM</td>
+                            <td>Miền Nam</td>
+                            <td>Thi THPT, Học bạ</td>
+                            <td>22 - 26</td>
+                            <td><a href="#" target="_blank">Website</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Application Section -->
+        <section id="application">
+            <h2>Hướng Dẫn Hồ Sơ Xét Tuyển</h2>
+            <p>Để chuẩn bị hồ sơ xét tuyển đại học, bạn cần:</p>
+            <ul>
+                <li>Đơn đăng ký xét tuyển (theo mẫu của trường).</li>
+                <li>Học bạ THPT (bản công chứng).</li>
+                <li>Giấy chứng nhận ưu tiên (nếu có).</li>
+                <li>Ảnh 3x4 và lệ phí xét tuyển.</li>
+            </ul>
+            <div class="timeline">
+                <h3>Lịch Tuyển Sinh 2025</h3>
+                <div class="timeline-item">
+                    <h4>30/06/2025</h4>
+                    <p>Hạn cuối nộp hồ sơ xét tuyển.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>15/08/2025</h4>
+                    <p>Công bố kết quả xét tuyển.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>30/08/2025</h4>
+                    <p>Xác nhận nhập học.</p>
+                </div>
+            </div>
+            <a href="#" class="cta-button">Tải mẫu hồ sơ (PDF)</a>
+        </section>
+
+        <!-- Scholarships Section -->
+        <section id="scholarships">
+            <h2>Học Bổng & Hỗ Trợ Tài Chính</h2>
+            <div class="card-grid">
+                <div class="card" data-type="scholarship" data-id="national">
+                    <h3>Học bổng ĐH Quốc gia</h3>
+                    <p>Trị giá: 20 triệu VNĐ/năm. Dành cho học sinh xuất sắc.</p>
+                    <a href="#" class="cta-button view-details">Xem chi tiết</a>
+                </div>
+                <div class="card" data-type="scholarship" data-id="vinfuture">
+                    <h3>Học bổng VinFuture</h3>
+                    <p>Trị giá: 50 triệu VNĐ/năm. Dành cho ngành STEM.</p>
+                    <a href="#" class="cta-button view-details">Xem chi tiết</a>
+                </div>
+                <div class="card" data-type="scholarship" data-id="loan">
+                    <h3>Vay vốn sinh viên</h3>
+                    <p>Lãi suất thấp từ ngân hàng nhà nước, hỗ trợ học phí.</p>
+                    <a href="#" class="cta-button view-details">Xem chi tiết</a>
+                </div>
+            </div>
+            <p style="text-align: center; margin-top: 1rem;">
+                <a href="#" class="cta-button view-details" data-type="guide" data-id="scholarship-guide">Hướng dẫn viết đơn xin học bổng</a>
+            </p>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz">
+            <h2>Trắc Nghiệm Chọn Ngành Phù Hợp</h2>
+            <p>Khám phá sở thích và năng lực của bạn để tìm ngành nghề phù hợp nhất!</p>
+            <p>Bài trắc nghiệm dựa trên mô hình Holland Code, giúp gợi ý ngành học theo tính cách.</p>
+            <a href="https://forms.gle/example" target="_blank" class="cta-button">Làm bài trắc nghiệm</a>
+        </section>
+    </div>
+
+    <!-- Modal for Details -->
+    <div id="detailsModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModal" class="close-button">×</span>
+            <h3 id="modalTitle"></h3>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2025 Hướng Nghiệp 12. All rights reserved. | <a href="#">Liên hệ</a> | <a href="#">Chính sách bảo mật</a></p>
+    </footer>
+
+    <!-- Link to JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
